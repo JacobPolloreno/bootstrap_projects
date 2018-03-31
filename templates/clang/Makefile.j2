@@ -2,20 +2,21 @@ CC = clang
 NAME = {{ name }}
 HEADER = includes/
 SRC = srcs/
-CS = {{ main }}.c
+CS = {{ main }}
 OBJS = $(patsubst %.c, %.o, $(CS))
 SRCS = $(addprefix $(SRC), $(CS))
 CFLAGS = -Wall -Wextra -Werror -I$(HEADER)
 ifeq ($(CDEBUG), 1)
 	CFLAGS += -g
 endif
-{% if libft_path %}CLFAGS += -I./libft/includes -L. -lft{% endif %}
+{% if libft_path %}CFLAGS += -I./libft/includes{% endif %}
+{% if libft_path %}LIBOPT = -L./libft/ -lft{% endif %}
 
 all: $(NAME)
 
 $(NAME): {% if libft_path %}./libft/libft.a {% endif %}
 	$(CC) $(CFLAGS) -c $(SRCS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+	$(CC) $(CFLAGS) $(LIBOPT) $(OBJS) -o $(NAME)
 
 clean:
 	/bin/rm -f $(OBJS)
