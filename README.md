@@ -2,10 +2,9 @@
 
 Python CLI script that takes user input and bootstrap new projects.
 
-
-Languages supported:
-	* Python
-	* C
+Supported Languages:
+- Python
+- C
 
 ```Shell
 $ python3 makeproj.py --help
