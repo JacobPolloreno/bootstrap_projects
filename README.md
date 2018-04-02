@@ -1,6 +1,6 @@
 # makeproj
 
-Python CLI script that takes user input and bootstrap new projects.
+Python CLI script that takes user input and bootstraps a new project.
 
 Supported Languages:
 - Python
@@ -20,6 +20,7 @@ Options:
   -o, --output_dir DIRECTORY
   --help                      Show this message and exit.
 ```
+
 ## Dependencies
 * Python==3.6
 * click==6.7
