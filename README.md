@@ -43,7 +43,7 @@ Options:
 ### C
 - Makefile
 - gitignore
-- Add your libft [my library](https://github.com/JacobPolloreno/42AIML)
+- Add your libft [my library](https://github.com/JacobPolloreno/42LIBFT)
 - README.md
 - main.c
 
