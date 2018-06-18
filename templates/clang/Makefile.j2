@@ -1,4 +1,8 @@
-CC = clang
+ifeq ($(USE_CLANG), 1)
+	CC = clang
+else
+	CC = gcc
+endif
 NAME = {{ name }}
 HEADER = includes/
 SRC = srcs/
@@ -10,11 +14,26 @@ ifeq ($(CDEBUG), 1)
 	CFLAGS += -g
 endif
 {% if libft_path %}CFLAGS += -I./libft/includes{% endif %}
-{% if libft_path %}LIBOPT = -L./libft/ -lft{% endif %}
+{% if libft_path %}
+LIBFT_DIR = ./libft
+LIBFT_LIB = $(LIBFT_DIR)/libft.a
+LIBOPT = -L$(LIBFT_DIR) -lft
+{% endif %}
+{% if test  %}
+TS_NAME = check.out
+TEST_HEADER = $$HOME/.brew/include/
+TEST_LIBRARY = $$HOME/.brew/lib/
+TEST = tests
+TS = $(patsubst %.a, %.check, $(NAME))
+TEST_CHECK = $(addprefix $(TEST)/, $(TS))
+TEST_SRC = $(addsuffix .c, $(TEST_CHECK))
+TEST_FLAGS = $(LIBOPT) -I$(TEST_HEADER) -L$(TEST_LIBRARY) -lcheck -L. -lft
+{% endif %}
 
 all: $(NAME)
 
-$(NAME): {% if libft_path %}./libft/libft.a {% endif %}
+$(NAME):
+	{% if libft_path %}make -C $(LIBFT_DIR) re{% endif %}
 	$(CC) $(CFLAGS) -c $(SRCS)
 	$(CC) $(CFLAGS) $(LIBOPT) $(OBJS) -o $(NAME)
 
@@ -25,3 +44,23 @@ fclean: clean
 	/bin/rm -rf $(NAME)
 
 re: fclean all
+{% if test %}
+re_test: re
+	make run_test
+
+make_test: clean_test $(NAME)
+	checkmk $(TEST_CHECK) > $(TEST_SRC)
+	$(CC) $(CFLAGS) $(TEST_FLAGS) $(TEST_SRC) -o $(TS_NAME)
+
+run_test: make_test
+	./$(TS_NAME); make clean_test
+
+clean_test:
+	/bin/rm -f $(TEST_SRC)
+	/bin/rm -f $(TS_NAME)
+	/bin/rm -rf $(TS_NAME).dSYM
+
+single_test: $(TEST)/single.c
+	$(CC) $(CFLAGS) $(TEST)/single.c -o single.test -L. -lft
+	./single.test
+{% endif %}

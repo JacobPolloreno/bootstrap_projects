@@ -14,7 +14,8 @@ from shutil import rmtree
 from urllib.parse import urlparse
 
 
-TEMPLATE_BASE_PATH = os.path.abspath('./templates')
+BASE_PATH = os.path.split(os.path.abspath(__file__))[0]
+TEMPLATE_BASE_PATH = os.path.join(BASE_PATH, 'templates')
 CLANG_TEMPLATE_PATH = os.path.join(TEMPLATE_BASE_PATH, 'clang')
 PYTHON_TEMPLATE_PATH = os.path.join(TEMPLATE_BASE_PATH, 'py')
 
@@ -81,6 +82,8 @@ def get_c_config(name: str) -> Dict:
                             file_okay=False,
                             dir_okay=True),
                         default=os.path.expanduser('~/Documents/libft/'))))
+        if click.prompt(f'Do you want a test framework?', type=bool):
+            config['test'] = 'True'
     if click.prompt(f'Do you want a "{name}.c" file?', type=bool):
         config['main'] = name + '.c'
     elif click.prompt("Do you want a 'main.c' file?", type=bool):
@@ -137,7 +140,7 @@ def create_program(
     """
     if 'author' in config:
         with open(os.path.join(output_dir, 'author'), 'w') as f:
-            f.write(config['author'])
+            f.write(config['author'] + "\n")
     if 'readme' in config:
         with open(os.path.join(output_dir, 'README.md'), 'w') as f:
             readme = render_template(
@@ -151,6 +154,9 @@ def create_program(
         incl_dir = os.path.join(output_dir, 'includes')
         os.mkdir(srcs_dir)
         os.mkdir(incl_dir)
+        if 'test' in config:
+            test_dir = os.path.join(output_dir, 'tests')
+            os.mkdir(test_dir)
         with open(os.path.join(output_dir, 'Makefile'), 'w') as f:
             makefile = render_template(
                 os.path.join(CLANG_TEMPLATE_PATH, 'Makefile.j2'),
@@ -166,7 +172,19 @@ def create_program(
             output_libft_path = os.path.join(output_dir, 'libft')
             copytree(config['libft_path'], output_libft_path)
             if os.path.exists(os.path.join(output_libft_path, '.git')):
-                rmtree(os.path.join(output_libft_pathm, '.git'))
+                rmtree(os.path.join(output_libft_path, '.git'))
+        if 'test' in config:
+            with open(os.path.join(test_dir, 'single.c'), 'w') as f:
+                single_test = render_template(
+                                os.path.join(CLANG_TEMPLATE_PATH, 'main.j2'),
+                                context=config)
+                f.write(single_test)
+            with open(os.path.join(
+                    test_dir, '{}.check'.format(config['name'])), 'w') as f:
+                check = render_template(
+                                os.path.join(CLANG_TEMPLATE_PATH, 'check.j2'),
+                                context=config)
+                f.write(check)
     elif lang == 'py':
         copy(os.path.join(PYTHON_TEMPLATE_PATH, 'Python.gitignore'),
              os.path.join(output_dir, '.gitignore'))
